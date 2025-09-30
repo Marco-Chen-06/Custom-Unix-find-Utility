@@ -18,12 +18,6 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'n':
 				name_flag = true;
-
-				// if no name specified, return an error
-				if (optarg == NULL) {
-					return 255;
-				}
-
 				name_pattern = optarg;
 				break;
 			case '?':
@@ -34,6 +28,7 @@ int main(int argc, char *argv[]) {
 
 	// if there is more than 1 non-option argument, return an error
 	if ((argc - optind)> 1) {
+		fprintf(stderr, "Error: Too many arguments specified\n");
 		return 255;
 	} 
 
