@@ -17,6 +17,15 @@ int main(int argc, char *argv[]) {
 				xdev_flag = true;
 				break;
 			case 'n':
+				/*
+				 * if the pattern contains a '/', and the pattern is not referring to
+				 * the root directory '/', return an error.
+				 */
+				if  ((strchr(optarg + 1, '/') != NULL)  || (optarg[0] == '/' && strlen(optarg) != 1)) {
+					fprintf(stderr, "Error: invalid syntax, name pattern should not include a '/'.\n"); 
+					return 255;
+				}
+
 				name_flag = true;
 				name_pattern = optarg;
 				break;
