@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 		return 255;
 	} 
 
-	// if no starting path specified, set the name pattern to just /
+	// if no starting path specified, set the name pattern to just .
 	if ((argc - optind) == 0) {
 		starting_path = ".";
 	} else if ((argc - optind) == 1) {
