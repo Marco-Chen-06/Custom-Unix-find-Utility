@@ -145,7 +145,7 @@ int print_verbose(char *buffer) {
 
 int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path, char *buffer, struct dirent *nextdir) {
 	if (name_flag) {
-		if (fnmatch(name_pattern, nextdir->d_name, 0) == 0) {
+		if (fnmatch(name_pattern, nextdir->d_name, 0) == 0){
 			if (ls_flag) {
 				print_verbose(buffer);
 			} else {
@@ -159,6 +159,7 @@ int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern,
 	} else {
 		printf("%s\n", buffer);
 	}
+
 	return 0;
 }
 

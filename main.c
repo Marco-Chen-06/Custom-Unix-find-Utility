@@ -57,6 +57,15 @@ int main(int argc, char *argv[]) {
 	} else if ((argc - optind) == 1) {
 		starting_path = argv[optind];
 	}
+	
+	// print the first directory entry. Only don't print it if there is the -n flag and the starting_path doesn't match the name_pattern
+	if (name_flag) {
+		if (fnmatch(name_pattern, starting_path, 0) == 0) {
+			print_info(ls_flag, xdev_flag, 0, name_pattern, starting_path, starting_path, NULL);
+		}
+	} else {
+		print_info(ls_flag, xdev_flag, 0, name_pattern, starting_path, starting_path, NULL);
+	}
 
 	recursive_dfs_search(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
 
