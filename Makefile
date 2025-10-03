@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS += -g
 
-simplefind : simplefind.c
+simplefind : main.c simplefind.c
 	${CC} ${CFLAGS} -o $@ $^
 
 .PHONY: clean

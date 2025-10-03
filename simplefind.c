@@ -1,59 +1,34 @@
 #include "simplefind.h"
-int main(int argc, char *argv[]) {
-	bool ls_flag = false;
-	bool xdev_flag = false;
-	bool name_flag = false;
-	char *name_pattern = NULL;
-	char *starting_path = NULL;
 
-	int opt;
+int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path) {
+	DIR *currentdir = opendir(starting_path);
 
-	while((opt = getopt(argc, argv, "lxn:")) != -1){
-		switch (opt) {
-			case 'l':
-				ls_flag = true;
-				break;
-			case 'x':
-				xdev_flag = true;
-				break;
-			case 'n':
-				/*
-				 * if the pattern contains a '/', and the pattern is not referring to
-				 * the root directory '/', return an error.
-				 */
-				if  ((strchr(optarg + 1, '/') != NULL)  || (optarg[0] == '/' && strlen(optarg) != 1)) {
-					fprintf(stderr, "Error: invalid syntax, name pattern should not include a '/'.\n"); 
-					return 255;
-				}
+	if (currentdir == NULL) {
+		return -1;
+	}
 
-				name_flag = true;
-				name_pattern = optarg;
-				break;
-			case '?':
-				// if missing option or argument, return an error
-				return 255;
+	struct dirent *nextdir;
+	char buffer[1024];
+
+	while(true) {
+		nextdir = readdir(currentdir);
+
+		if (nextdir == NULL) {
+			break;
+		}
+
+		if (strcmp(nextdir->d_name, ".") != 0 && strcmp(nextdir->d_name, "..") != 0) {
+			snprintf(buffer, 1024, "%s/%s", starting_path, nextdir->d_name);
+			printf("%s\n\n", buffer);
+			if (nextdir->d_type == DT_DIR) {
+				recursive_dfs_search(ls_flag, xdev_flag, name_flag, name_pattern, buffer);
+			}
 		}
 	}
 
-	// if there is more than 1 non-option argument, return an error
-	if ((argc - optind)> 1) {
-		fprintf(stderr, "Error: Too many arguments specified\n");
-		return 255;
-	} 
-
-	// if no starting path specified, set the name pattern to just .
-	if ((argc - optind) == 0) {
-		starting_path = ".";
-	} else if ((argc - optind) == 1) {
-		starting_path = argv[optind];
+	if (closedir(currentdir) == -1) {
+		return -1;
 	}
 
-
-
-	printf("ls_flag: %d\n", ls_flag);
-	printf("xdev_flag: %d\n", xdev_flag);
-	printf("name_flag: %d\n", name_flag);
-	printf("name pattern: %s\n", name_pattern);
-	printf("starting path: %s\n", starting_path);
 	return 0;
-}       
+}
