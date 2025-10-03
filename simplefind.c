@@ -1,7 +1,36 @@
 #include "simplefind.h"
 
+static int print_path(mode_t st_mode, st_size *buffer) {
+}
+
+static int print_formatted_time(time_t mtime) {
+	// using example from man 3 strftime
+	char outstr[200];
+	struct tm *tmp;
+	tmp = localtime(&mtime);
+	if ((strftime(outstr, sizeof(outstr), "%b %e %H:%M", tmp)) == 0) {
+		fprintf(stderr, "Error: Strftime failed to format st_mtime");
+		return 255;
+	}
+	printf("%s", outstr);
+	return 0;
+}
+
+
+// Print the size in bytes of the node. For BLK or CHR devices, print the major and minor 
+// device numbers. Returns 0 if size is printed, and 1 if major and minot numbers are printed.
+static int print_size(mode_t st_mode, off_t st_size, dev_t st_rdev) {
+	if (((st_mode & S_IFMT) == S_IFBLK) || ((st_mode & S_IFMT) == S_IFCHR)) {
+		printf("%4d ", major(st_rdev));
+		printf("%4d ", minor(st_rdev));
+		return 1;
+	}
+	printf("%8d ", st_size);
+	return 0;
+}
+
 // print the gid or group corresponding to the id. Returns 0 if group is printed, and 1 if gid is printed.
-int print_group(gid_t st_gid) {
+static int print_group(gid_t st_gid) {
 	struct group *grp;
 
 	if ((grp = getgrgid(st_gid)) == NULL) {
@@ -13,7 +42,7 @@ int print_group(gid_t st_gid) {
 }
 
 // print the userid or username corresponding to the id. Returns 0 if username is printed, and 1 if uid is printed.
-int print_user(uid_t st_uid) {
+static int print_user(uid_t st_uid) {
 	struct passwd *pwd;
 
 	if ((pwd = getpwuid(st_uid)) == NULL) {
@@ -22,11 +51,10 @@ int print_user(uid_t st_uid) {
 	}
 	printf("%s    ", pwd->pw_name);
 	return 0;
-
 }
 
 // prints the mode of an inode in human-readable format, like verbose ls
-int print_mode(mode_t st_mode) {
+static int print_mode(mode_t st_mode) {
 	char buffer[11];
 	// handle leftmost bit
 	switch (st_mode & S_IFMT) {
@@ -64,6 +92,7 @@ int print_mode(mode_t st_mode) {
 	buffer[8] = (st_mode & S_IWOTH) ? 'w' : '-';
 	buffer[9] = (st_mode & S_IXOTH) ? 'x' : '-';
 
+	buffer[10] = '\0';
         /*
 	 * handle SUID SGID and sticky bits. The s and t are capitalized if the
 	 * execute permission is not set.
@@ -94,6 +123,8 @@ int print_verbose(char *buffer) {
 	printf("%d ", st.st_nlink);
 	print_user(st.st_uid);
 	print_group(st.st_gid);
+	print_size(st.st_mode, st.st_size, st.st_rdev);
+	print_formatted_time(st.st_mtime);
 	printf("\n");
 	return 0;
 }

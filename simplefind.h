@@ -1,5 +1,5 @@
-#ifndef MY_LIB_H
-#define MY_LIB_H
+#ifndef SIMPLEFIND_H
+#define SIMPLEFIND_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,10 +11,11 @@
 #include <dirent.h>
 #include <sys/syscall.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <stdbool.h>
 #include <pwd.h>     
 #include <grp.h>
+#include <sys/sysmacros.h>
+#include <time.h>
 
 struct inodeinfo {
     dev_t      st_dev;      /* ID of device containing file */
@@ -33,8 +34,6 @@ struct inodeinfo {
     char* symlink; 
 };
 
-int print_user(uid_t st_uid);
-int print_mode(mode_t st_mode);
 int print_verbose(char *buffer);
 int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path, char *buffer, struct dirent *nextdir);
 int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path);
