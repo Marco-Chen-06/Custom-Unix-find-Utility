@@ -1,5 +1,7 @@
 #include "simplefind.h"
 
+// Print the path of the node. If it is a symlink, also print the path the symlink
+// points to. Return 0 for success, 255 for failure.
 static int print_path(mode_t st_mode, char *buffer, off_t st_size) {
 	printf("%s", buffer);
 
@@ -16,6 +18,7 @@ static int print_path(mode_t st_mode, char *buffer, off_t st_size) {
 	return 0;
 }
 
+// Print the formatted time of the node. Return 0 for success, and 255 for failure.
 static int print_formatted_time(time_t mtime) {
 	// using example from man 3 strftime
 	char outstr[200];
@@ -123,6 +126,7 @@ static int print_mode(mode_t st_mode) {
 	printf("%s ", buffer);
 }
 
+// print the verbose version of the node details
 int print_verbose(char *buffer) {
 	struct stat st;
 	if (lstat(buffer, &st) == -1) {
@@ -143,6 +147,7 @@ int print_verbose(char *buffer) {
 	return 0;
 }
 
+// handle the option logic for printing to stdout for the simplefind command
 int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path, char *buffer, struct dirent *nextdir) {
 	if (name_flag) {
 		if (fnmatch(name_pattern, nextdir->d_name, 0) == 0){
