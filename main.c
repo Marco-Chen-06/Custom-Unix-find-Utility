@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 				xdev_flag = true;
 				break;
 			case 'n':
-/*
+                                /*
 				 * if the pattern contains a '/', and the pattern is not referring to
 				 * the root directory '/', return an error.
 				 */
@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
 		starting_path = argv[optind];
 	}
 
-	// DEBUGGING LINE, REMOVE IN FINAL SUBMISSION (sorry if I forget)
-	print_options(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
+	// // DEBUGGING LINE, REMOVE IN FINAL SUBMISSION (sorry if I forget)
+	// print_options(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
 
 	recursive_dfs_search(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
 
@@ -68,3 +68,4 @@ int main(int argc, char *argv[]) {
 	
 	return 0;
 }       
+

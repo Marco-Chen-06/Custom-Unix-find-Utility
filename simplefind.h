@@ -32,6 +32,8 @@ struct inodeinfo {
 };
 
 
+int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path, char *buffer, struct dirent *nextdir);
 int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path);
 
 #endif
+
