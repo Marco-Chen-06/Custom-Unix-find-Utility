@@ -219,7 +219,8 @@ int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *nam
 		}
 	}
 
-	if (closedir(currentdir) == -1) {
+	if ((closedir(currentdir) == -1) && (errno != 0)) {
+		fprintf(stderr, "Failed to read directory %s: %s\n", starting_path, strerror(errno)); 
 		return -1;
 	}
 
