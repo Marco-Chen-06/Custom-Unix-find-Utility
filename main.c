@@ -58,14 +58,8 @@ int main(int argc, char *argv[]) {
 		starting_path = argv[optind];
 	}
 
-	// // DEBUGGING LINE, REMOVE IN FINAL SUBMISSION (sorry if I forget)
-	// print_options(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
-
 	recursive_dfs_search(ls_flag, xdev_flag, name_flag, name_pattern, starting_path);
 
-
-
-	
 	return 0;
 }       
 

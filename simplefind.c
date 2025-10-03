@@ -1,13 +1,58 @@
 #include "simplefind.h"
 
+// prints the mode of an inode in human-readable format
+int print_mode(mode_t st_mode) {
+	char buffer[11];
+	// handle leftmost bit
+	switch (st_mode & S_IFMT) {
+		case S_IFREG: 
+			buffer[0] = '-';
+		case S_IFDIR:
+			buffer[0] = 'd';
+		case S_IFLNK:
+			buffer[0] = 'l';
+		case S_IFCHR:
+			buffer[0] = 'c';
+		case S_IFBLK:
+			buffer[0] = 'b';
+		case S_IFSOCK:
+			buffer[0] = 's';
+		case S_IFIFO:
+			buffer[0] = 'p';
+
+	}
+}
+
+int print_verbose(char *buffer) {
+	struct stat st;
+	if (stat(buffer, &st) == -1) {
+		fprintf(stderr, "Failed to get stat struct for path: %s for verbose print. %s \n", buffer, strerror(errno));
+		return 255;
+	}
+	// print verbose inode data
+	printf("%d     ", st.st_ino);
+	printf("%d  ", st.st_blocks / 2); // st_blocks gives units of 512 bytes, so divide by 2 for units of 1k bytes
+	print_mode(st.st_mode);
+	return 0;
+}
+
 int print_info(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path, char *buffer, struct dirent *nextdir) {
 	if (name_flag) {
 		if (fnmatch(name_pattern, nextdir->d_name, 0) == 0) {
-			printf("%s\n", buffer);
+			if (ls_flag) {
+				print_verbose(buffer);
+			} else {
+				printf("%s\n", buffer);
+			}
 		}
 		return 0;
 	}
-	printf("%s\n", buffer);
+	if (ls_flag) {
+		print_verbose(buffer);
+	} else {
+		printf("%s\n", buffer);
+	}
+	return 0;
 }
 
 int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *name_pattern, char *starting_path) {
@@ -19,7 +64,7 @@ int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *nam
 	// get the stat struct for the starting path
 	struct stat start_st;
 	if (stat(starting_path, &start_st) == -1) {
-		fprintf(stderr, "Failed to get stat struct for path: %s. %s \n", starting_path, strerror(errno)); 
+		fprintf(stderr, "Failed to get stat struct for starting path: %s. %s \n", starting_path, strerror(errno)); 
 	}
 
 	if (currentdir == NULL) {
