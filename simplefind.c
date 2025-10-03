@@ -1,6 +1,19 @@
 #include "simplefind.h"
 
-static int print_path(mode_t st_mode, st_size *buffer) {
+static int print_path(mode_t st_mode, char *buffer, off_t st_size) {
+	printf("%s", buffer);
+
+	// detect symlinks and print the path the symlink points to
+	if ((st_mode & S_IFMT) == S_IFLNK){
+		char link_buf[st_size + 1];
+		if (readlink(buffer, link_buf,sizeof(link_buf) - 1) == -1) {
+			fprintf(stderr, "Failed to read symlink for path: %s. %s \n", buffer, strerror(errno));
+			return 255;
+		}
+		link_buf[st_size]  = '\0';
+		printf(" -> %s", link_buf);
+	}
+	return 0;
 }
 
 static int print_formatted_time(time_t mtime) {
@@ -9,10 +22,10 @@ static int print_formatted_time(time_t mtime) {
 	struct tm *tmp;
 	tmp = localtime(&mtime);
 	if ((strftime(outstr, sizeof(outstr), "%b %e %H:%M", tmp)) == 0) {
-		fprintf(stderr, "Error: Strftime failed to format st_mtime");
+		fprintf(stderr, "Error: Strftime failed to format st_mtime\n");
 		return 255;
 	}
-	printf("%s", outstr);
+	printf("%s ", outstr);
 	return 0;
 }
 
@@ -21,8 +34,8 @@ static int print_formatted_time(time_t mtime) {
 // device numbers. Returns 0 if size is printed, and 1 if major and minot numbers are printed.
 static int print_size(mode_t st_mode, off_t st_size, dev_t st_rdev) {
 	if (((st_mode & S_IFMT) == S_IFBLK) || ((st_mode & S_IFMT) == S_IFCHR)) {
-		printf("%4d ", major(st_rdev));
-		printf("%4d ", minor(st_rdev));
+		printf("%3d ", major(st_rdev));
+		printf("%3d ", minor(st_rdev));
 		return 1;
 	}
 	printf("%8d ", st_size);
@@ -34,10 +47,10 @@ static int print_group(gid_t st_gid) {
 	struct group *grp;
 
 	if ((grp = getgrgid(st_gid)) == NULL) {
-		printf("%d    ", st_gid);
+		printf( " %-8d ", st_gid);
 		return 1;
 	}
-	printf("%s    ", grp->gr_name);
+	printf( " %-8s ", grp->gr_name);
 	return 0;
 }
 
@@ -46,10 +59,10 @@ static int print_user(uid_t st_uid) {
 	struct passwd *pwd;
 
 	if ((pwd = getpwuid(st_uid)) == NULL) {
-		printf("%d    ", st_uid);
+		printf("%-8d", st_uid);
 		return 1;
 	}
-	printf("%s    ", pwd->pw_name);
+	printf("%-8s", pwd->pw_name);
 	return 0;
 }
 
@@ -107,24 +120,25 @@ static int print_mode(mode_t st_mode) {
 		buffer[9] = (buffer[9] == 'x') ? 't' : 'T';
 	}
 
-	printf("%s   ", buffer);
+	printf("%s ", buffer);
 }
 
 int print_verbose(char *buffer) {
 	struct stat st;
-	if (stat(buffer, &st) == -1) {
+	if (lstat(buffer, &st) == -1) {
 		fprintf(stderr, "Failed to get stat struct for path: %s for verbose print. %s \n", buffer, strerror(errno));
 		return 255;
 	}
 	// print verbose inode data
-	printf("  %d      ", st.st_ino);
-	printf("%d ", st.st_blocks / 2); // st_blocks gives units of 512 bytes, so divide by 2 for units of 1k bytes
+	printf("  %7d", st.st_ino);
+	printf("%7d ", st.st_blocks / 2); // st_blocks gives units of 512 bytes, so divide by 2 for units of 1k bytes
 	print_mode(st.st_mode);
-	printf("%d ", st.st_nlink);
+	printf("%3d ", st.st_nlink);
 	print_user(st.st_uid);
 	print_group(st.st_gid);
 	print_size(st.st_mode, st.st_size, st.st_rdev);
 	print_formatted_time(st.st_mtime);
+	print_path(st.st_mode, buffer, st.st_size);
 	printf("\n");
 	return 0;
 }
@@ -181,9 +195,10 @@ int recursive_dfs_search(bool ls_flag, bool xdev_flag, bool name_flag, char *nam
 		// in the case xdev_flag is set, skip directories on filesystems different from starting_path's
 		if (xdev_flag) {
 			struct stat next_st;
-			if (stat(buffer, &next_st) == -1) {
+			if (lstat(buffer, &next_st) == -1) {
 				fprintf(stderr, "Failed to get stat struct for path: %s. %s \n", buffer, strerror(errno));
 			}
+			// skip directories from different filesystems
 			if (start_st.st_dev != next_st.st_dev) {
 				continue;
 			}
