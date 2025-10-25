@@ -1,2 +1,2 @@
-# ece357-simplefind
-Helper functions for a find function in c
+# Custom-Unix-find-Utility
+Custom BFS implementation of UNIX find utility. Supports xdev and verbose output flags.
